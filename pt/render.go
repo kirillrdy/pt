@@ -2,11 +2,9 @@ package pt
 
 import (
 	"fmt"
-	"image"
+	"image/color"
 	"math"
 	"math/rand"
-	"runtime"
-	"strings"
 	"time"
 )
 
@@ -25,84 +23,78 @@ func showProgress(start time.Time, rays uint64, i, h int) {
 	fmt.Printf("] %s %s ", DurationString(elapsed), NumberString(rps))
 }
 
-func Render(scene *Scene, camera *Camera, w, h, cameraSamples, hitSamples, bounces int) image.Image {
-	ncpu := runtime.NumCPU()
-	runtime.GOMAXPROCS(ncpu)
+type ResultEvent struct {
+	X     int
+	Y     int
+	Pixel color.RGBA
+}
+
+func Render(scene *Scene, camera *Camera, w, h, cameraSamples, hitSamples, bounces int) chan ResultEvent {
 	scene.Compile()
-	result := image.NewRGBA(image.Rect(0, 0, w, h))
-	ch := make(chan int, h)
 	absCameraSamples := int(math.Abs(float64(cameraSamples)))
-	fmt.Printf("%d x %d pixels, %d x %d = %d samples, %d bounces, %d cores\n",
-		w, h, absCameraSamples, hitSamples, absCameraSamples*hitSamples, bounces, ncpu)
-	start := time.Now()
+	fmt.Printf("%d x %d pixels, %d x %d = %d samples, %d bounces",
+		w, h, absCameraSamples, hitSamples, absCameraSamples*hitSamples, bounces)
 	scene.rays = 0
-	for i := 0; i < ncpu; i++ {
-		go func(i int) {
-			rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
-			for y := i; y < h; y += ncpu {
-				for x := 0; x < w; x++ {
-					c := Color{}
-					if cameraSamples <= 0 {
-						// random subsampling
-						for i := 0; i < absCameraSamples; i++ {
-							fu := rnd.Float64()
-							fv := rnd.Float64()
+	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
+	results := make(chan ResultEvent)
+	go func() {
+		for y := 0; y < h; y++ {
+			for x := 0; x < w; x++ {
+				c := Color{}
+				if cameraSamples <= 0 {
+					// random subsampling
+					for i := 0; i < absCameraSamples; i++ {
+						fu := rnd.Float64()
+						fv := rnd.Float64()
+						ray := camera.CastRay(x, y, w, h, fu, fv, rnd)
+						c = c.Add(scene.Sample(ray, true, hitSamples, bounces, rnd))
+					}
+					c = c.DivScalar(float64(absCameraSamples))
+				} else {
+					// stratified subsampling
+					n := int(math.Sqrt(float64(cameraSamples)))
+					for u := 0; u < n; u++ {
+						for v := 0; v < n; v++ {
+							fu := (float64(u) + 0.5) / float64(n)
+							fv := (float64(v) + 0.5) / float64(n)
 							ray := camera.CastRay(x, y, w, h, fu, fv, rnd)
 							c = c.Add(scene.Sample(ray, true, hitSamples, bounces, rnd))
 						}
-						c = c.DivScalar(float64(absCameraSamples))
-					} else {
-						// stratified subsampling
-						n := int(math.Sqrt(float64(cameraSamples)))
-						for u := 0; u < n; u++ {
-							for v := 0; v < n; v++ {
-								fu := (float64(u) + 0.5) / float64(n)
-								fv := (float64(v) + 0.5) / float64(n)
-								ray := camera.CastRay(x, y, w, h, fu, fv, rnd)
-								c = c.Add(scene.Sample(ray, true, hitSamples, bounces, rnd))
-							}
-						}
-						c = c.DivScalar(float64(n * n))
 					}
-					c = c.Pow(1 / 2.2)
-					result.SetRGBA(x, y, c.RGBA())
+					c = c.DivScalar(float64(n * n))
 				}
-				ch <- 1
+				c = c.Pow(1 / 2.2)
+
+				results <- ResultEvent{X: x, Y: y, Pixel: c.RGBA()}
 			}
-		}(i)
-	}
-	showProgress(start, scene.RayCount(), 0, h)
-	for i := 0; i < h; i++ {
-		<-ch
-		showProgress(start, scene.RayCount(), i+1, h)
-	}
-	fmt.Println()
-	return result
+		}
+	}()
+	return results
 }
 
-func IterativeRender(pathTemplate string, iterations int, scene *Scene, camera *Camera, w, h, cameraSamples, hitSamples, bounces int) error {
-	scene.Compile()
-	pixels := make([]Color, w*h)
-	result := image.NewRGBA(image.Rect(0, 0, w, h))
-	for i := 1; i <= iterations; i++ {
-		fmt.Printf("\n[Iteration %d of %d]\n", i, iterations)
-		frame := Render(scene, camera, w, h, cameraSamples, hitSamples, bounces)
-		for y := 0; y < h; y++ {
-			for x := 0; x < w; x++ {
-				index := y*w + x
-				c := NewColor(frame.At(x, y))
-				pixels[index] = pixels[index].Add(c)
-				avg := pixels[index].DivScalar(float64(i))
-				result.SetRGBA(x, y, avg.RGBA())
-			}
-		}
-		path := pathTemplate
-		if strings.Contains(path, "%") {
-			path = fmt.Sprintf(pathTemplate, i)
-		}
-		if err := SavePNG(path, result); err != nil {
-			return err
-		}
-	}
-	return nil
-}
+// func IterativeRender(pathTemplate string, iterations int, scene *Scene, camera *Camera, w, h, cameraSamples, hitSamples, bounces int) error {
+// 	scene.Compile()
+// 	pixels := make([]Color, w*h)
+// 	result := image.NewRGBA(image.Rect(0, 0, w, h))
+// 	for i := 1; i <= iterations; i++ {
+// 		fmt.Printf("\n[Iteration %d of %d]\n", i, iterations)
+// 		frame := Render(scene, camera, w, h, cameraSamples, hitSamples, bounces)
+// 		for y := 0; y < h; y++ {
+// 			for x := 0; x < w; x++ {
+// 				index := y*w + x
+// 				c := NewColor(frame.At(x, y))
+// 				pixels[index] = pixels[index].Add(c)
+// 				avg := pixels[index].DivScalar(float64(i))
+// 				result.SetRGBA(x, y, avg.RGBA())
+// 			}
+// 		}
+// 		path := pathTemplate
+// 		if strings.Contains(path, "%") {
+// 			path = fmt.Sprintf(pathTemplate, i)
+// 		}
+// 		if err := SavePNG(path, result); err != nil {
+// 			return err
+// 		}
+// 	}
+// 	return nil
+// }
