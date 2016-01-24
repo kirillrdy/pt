@@ -4,20 +4,20 @@ import (
 	"math/rand"
 
 	"github.com/kirillrdy/pt/pt"
-	"github.com/kirillrdy/render"
+	"github.com/kirillrdy/pt/xlib"
 )
 
 func uint8ToPixel(val uint8) int {
 	fraction := float64(val) / 255.0
-	return int(fraction * 65555)
+	return int(fraction * 65535)
 }
 
 func main() {
 
-	width := 640
-	height := 480
+	width := 1980
+	height := 1080
 
-	render.Init()
+	xlib.CreateWindow(width, height)
 
 	scene := pt.Scene{}
 	floor := pt.GlossyMaterial(pt.HexColor(0x7E827A), 1.1, pt.Radians(30))
@@ -39,16 +39,14 @@ func main() {
 	camera := pt.LookAt(pt.Vector{1, 0, 30}, pt.Vector{0, 0, 0}, pt.Vector{0, 0, 1}, 35)
 	//IterativeRender("out%03d.png", 1000, &scene, &camera, 2560, 1440, -1, 4, 4)
 
-	cameraSamples := 200
-	hitSamples := 200
-	bounces := 10
+	cameraSamples := -1
+	hitSamples := 4
+	bounces := 4
 
 	eventsChan := pt.Render(&scene, &camera, width, height, cameraSamples, hitSamples, bounces)
 
-	for {
-		event := <-eventsChan
-		avg := event.Pixel
-		render.SetPixel(event.X, event.Y, uint8ToPixel(avg.R), uint8ToPixel(avg.G), uint8ToPixel(avg.B))
+	for event := range eventsChan {
+		xlib.SetPixel(event.X, event.Y, uint8ToPixel(event.Pixel.R), uint8ToPixel(event.Pixel.G), uint8ToPixel(event.Pixel.B))
 	}
 }
 

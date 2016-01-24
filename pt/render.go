@@ -32,7 +32,7 @@ type ResultEvent struct {
 func Render(scene *Scene, camera *Camera, w, h, cameraSamples, hitSamples, bounces int) chan ResultEvent {
 	scene.Compile()
 	absCameraSamples := int(math.Abs(float64(cameraSamples)))
-	fmt.Printf("%d x %d pixels, %d x %d = %d samples, %d bounces",
+	fmt.Printf("%d x %d pixels, %d x %d = %d samples, %d bounces \n",
 		w, h, absCameraSamples, hitSamples, absCameraSamples*hitSamples, bounces)
 	scene.rays = 0
 	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -68,6 +68,7 @@ func Render(scene *Scene, camera *Camera, w, h, cameraSamples, hitSamples, bounc
 				results <- ResultEvent{X: x, Y: y, Pixel: c.RGBA()}
 			}
 		}
+		close(results)
 	}()
 	return results
 }
