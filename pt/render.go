@@ -54,14 +54,12 @@ func pixelJobs(width int, height int) chan pixelJob {
 	return jobChannel
 }
 
-func Render(scene *Scene, camera *Camera, w, h, cameraSamples, hitSamples, bounces int) chan ResultEvent {
-
+func Render(scene *Scene, camera *Camera, w, h int) chan ResultEvent {
 	pixelJobs := pixelJobs(w, h)
-
 	scene.Compile()
-	absCameraSamples := int(math.Abs(float64(cameraSamples)))
+	absCameraSamples := int(math.Abs(float64(RenderConfig.CameraSamples)))
 	fmt.Printf("%d x %d pixels, %d x %d = %d samples, %d bounces \n",
-		w, h, absCameraSamples, hitSamples, absCameraSamples*hitSamples, bounces)
+		w, h, absCameraSamples, RenderConfig.HitSamples, absCameraSamples*RenderConfig.HitSamples, RenderConfig.Bounces)
 	scene.rays = 0
 	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
 	results := make(chan ResultEvent)
@@ -69,7 +67,7 @@ func Render(scene *Scene, camera *Camera, w, h, cameraSamples, hitSamples, bounc
 		for pixelJob := range pixelJobs {
 			x := pixelJob.x
 			y := pixelJob.y
-			renderEvent := pixelRender(w, h, scene, camera, x, y, absCameraSamples, cameraSamples, hitSamples, bounces, rnd)
+			renderEvent := pixelRender(w, h, scene, camera, x, y, absCameraSamples, rnd)
 			results <- renderEvent
 		}
 
@@ -78,27 +76,27 @@ func Render(scene *Scene, camera *Camera, w, h, cameraSamples, hitSamples, bounc
 	return results
 }
 
-func pixelRender(w, h int, scene *Scene, camera *Camera, x, y int, absCameraSamples, cameraSamples, hitSamples, bounces int, rnd *rand.Rand) ResultEvent {
+func pixelRender(w, h int, scene *Scene, camera *Camera, x, y int, absCameraSamples int, rnd *rand.Rand) ResultEvent {
 
 	c := Color{}
-	if cameraSamples <= 0 {
+	if RenderConfig.CameraSamples <= 0 {
 		// random subsampling
 		for i := 0; i < absCameraSamples; i++ {
 			fu := rnd.Float64()
 			fv := rnd.Float64()
 			ray := camera.CastRay(x, y, w, h, fu, fv, rnd)
-			c = c.Add(scene.Sample(ray, true, hitSamples, bounces, rnd))
+			c = c.Add(scene.Sample(ray, true, RenderConfig.HitSamples, RenderConfig.Bounces, rnd))
 		}
 		c = c.DivScalar(float64(absCameraSamples))
 	} else {
 		// stratified subsampling
-		n := int(math.Sqrt(float64(cameraSamples)))
+		n := int(math.Sqrt(float64(RenderConfig.CameraSamples)))
 		for u := 0; u < n; u++ {
 			for v := 0; v < n; v++ {
 				fu := (float64(u) + 0.5) / float64(n)
 				fv := (float64(v) + 0.5) / float64(n)
 				ray := camera.CastRay(x, y, w, h, fu, fv, rnd)
-				c = c.Add(scene.Sample(ray, true, hitSamples, bounces, rnd))
+				c = c.Add(scene.Sample(ray, true, RenderConfig.HitSamples, RenderConfig.Bounces, rnd))
 			}
 		}
 		c = c.DivScalar(float64(n * n))
