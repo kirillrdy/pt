@@ -5,6 +5,7 @@ import (
 	"github.com/kirillrdy/pt/xlib"
 	"math"
 	"math/rand"
+	"runtime"
 	"time"
 )
 
@@ -61,18 +62,19 @@ func Render(scene *Scene, camera *Camera, w, h int) chan ResultEvent {
 	fmt.Printf("%d x %d pixels, %d x %d = %d samples, %d bounces \n",
 		w, h, absCameraSamples, RenderConfig.HitSamples, absCameraSamples*RenderConfig.HitSamples, RenderConfig.Bounces)
 	scene.rays = 0
-	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
+	//rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
 	results := make(chan ResultEvent)
-	go func() {
-		for pixelJob := range pixelJobs {
-			x := pixelJob.x
-			y := pixelJob.y
-			renderEvent := pixelRender(w, h, scene, camera, x, y, absCameraSamples, rnd)
-			results <- renderEvent
-		}
+	for i := 0; i < runtime.NumCPU(); i++ {
+		go func() {
+			rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
+			for pixelJob := range pixelJobs {
+				renderEvent := pixelRender(w, h, scene, camera, pixelJob.x, pixelJob.y, absCameraSamples, rnd)
+				results <- renderEvent
+			}
 
-		close(results)
-	}()
+			//close(results)
+		}()
+	}
 	return results
 }
 
