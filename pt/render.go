@@ -61,37 +61,42 @@ func Render(scene *Scene, camera *Camera, w, h, cameraSamples, hitSamples, bounc
 		for pixelJob := range pixelJobs {
 			x := pixelJob.x
 			y := pixelJob.y
-			c := Color{}
-			if cameraSamples <= 0 {
-				// random subsampling
-				for i := 0; i < absCameraSamples; i++ {
-					fu := rnd.Float64()
-					fv := rnd.Float64()
-					ray := camera.CastRay(x, y, w, h, fu, fv, rnd)
-					c = c.Add(scene.Sample(ray, true, hitSamples, bounces, rnd))
-				}
-				c = c.DivScalar(float64(absCameraSamples))
-			} else {
-				// stratified subsampling
-				n := int(math.Sqrt(float64(cameraSamples)))
-				for u := 0; u < n; u++ {
-					for v := 0; v < n; v++ {
-						fu := (float64(u) + 0.5) / float64(n)
-						fv := (float64(v) + 0.5) / float64(n)
-						ray := camera.CastRay(x, y, w, h, fu, fv, rnd)
-						c = c.Add(scene.Sample(ray, true, hitSamples, bounces, rnd))
-					}
-				}
-				c = c.DivScalar(float64(n * n))
-			}
-			c = c.Pow(1 / 2.2)
-
-			results <- ResultEvent{X: x, Y: y, Pixel: c}
+			renderEvent := pixelRender(w, h, scene, camera, x, y, absCameraSamples, cameraSamples, hitSamples, bounces, rnd)
+			results <- renderEvent
 		}
 
 		close(results)
 	}()
 	return results
+}
+
+func pixelRender(w, h int, scene *Scene, camera *Camera, x, y int, absCameraSamples, cameraSamples, hitSamples, bounces int, rnd *rand.Rand) ResultEvent {
+
+	c := Color{}
+	if cameraSamples <= 0 {
+		// random subsampling
+		for i := 0; i < absCameraSamples; i++ {
+			fu := rnd.Float64()
+			fv := rnd.Float64()
+			ray := camera.CastRay(x, y, w, h, fu, fv, rnd)
+			c = c.Add(scene.Sample(ray, true, hitSamples, bounces, rnd))
+		}
+		c = c.DivScalar(float64(absCameraSamples))
+	} else {
+		// stratified subsampling
+		n := int(math.Sqrt(float64(cameraSamples)))
+		for u := 0; u < n; u++ {
+			for v := 0; v < n; v++ {
+				fu := (float64(u) + 0.5) / float64(n)
+				fv := (float64(v) + 0.5) / float64(n)
+				ray := camera.CastRay(x, y, w, h, fu, fv, rnd)
+				c = c.Add(scene.Sample(ray, true, hitSamples, bounces, rnd))
+			}
+		}
+		c = c.DivScalar(float64(n * n))
+	}
+	c = c.Pow(1 / 2.2)
+	return ResultEvent{X: x, Y: y, Pixel: c}
 }
 
 // func IterativeRender(pathTemplate string, iterations int, scene *Scene, camera *Camera, w, h, cameraSamples, hitSamples, bounces int) error {
