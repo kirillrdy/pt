@@ -39,11 +39,7 @@ func main() {
 	camera := pt.LookAt(pt.Vector{1, 0, 30}, pt.Vector{0, 0, 0}, pt.Vector{0, 0, 1}, 35)
 	//IterativeRender("out%03d.png", 1000, &scene, &camera, 2560, 1440, -1, 4, 4)
 
-	cameraSamples := -1
-	hitSamples := 4
-	bounces := 4
-
-	pt.RenderToWindow(pt.Render(&scene, &camera, width, height, cameraSamples, hitSamples, bounces))
+	pt.RenderToWindow(pt.Render(&scene, &camera, width, height))
 }
 
 //TODO write a function that averages 2 images

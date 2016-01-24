@@ -3,7 +3,8 @@ package main
 import (
 	"math/rand"
 
-	"github.com/fogleman/pt/pt"
+	"github.com/kirillrdy/pt/pt"
+	"github.com/kirillrdy/pt/xlib"
 )
 
 const N = 16
@@ -87,5 +88,10 @@ func main() {
 	mesh := pt.NewMesh(triangles)
 	scene.Add(mesh)
 	camera := pt.LookAt(pt.Vector{-13, 11, -7}, pt.Vector{0, 0, 0}, pt.Vector{0, 1, 0}, 45)
-	pt.IterativeRender("out%03d.png", 1000, &scene, &camera, 2560/2, 1440/2, -1, 4, 4)
+
+	width := 2560 / 2
+	height := 1440 / 2
+
+	xlib.CreateWindow(width, height)
+	pt.RenderToWindow(pt.Render(&scene, &camera, width, height))
 }

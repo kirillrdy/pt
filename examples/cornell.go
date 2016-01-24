@@ -1,6 +1,7 @@
 package main
 
-import "github.com/fogleman/pt/pt"
+import "github.com/kirillrdy/pt/pt"
+import "github.com/kirillrdy/pt/xlib"
 
 func main() {
 	white := pt.DiffuseMaterial(pt.Color{0.740, 0.742, 0.734})
@@ -20,5 +21,9 @@ func main() {
 	scene.Add(pt.NewTransformedShape(cube, transform))
 	scene.Add(pt.NewCube(pt.Vector{-2, 9.8, -2}, pt.Vector{2, 10, 2}, light))
 	camera := pt.LookAt(pt.Vector{0, 0, -20}, pt.Vector{0, 0, 1}, pt.Vector{0, 1, 0}, 65)
-	pt.IterativeRender("out%03d.png", 10, &scene, &camera, 512, 512, -1, 16, 4)
+
+	width := 512
+	height := 512
+	xlib.CreateWindow(width, height)
+	pt.RenderToWindow(pt.Render(&scene, &camera, width, height))
 }
