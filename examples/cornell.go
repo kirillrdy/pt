@@ -25,5 +25,6 @@ func main() {
 	width := 512
 	height := 512
 	xlib.CreateWindow(width, height)
+	pt.RenderConfig.CameraSamples = 20
 	pt.RenderToWindow(pt.Render(&scene, &camera, width, height))
 }
