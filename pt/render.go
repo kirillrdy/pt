@@ -2,6 +2,7 @@ package pt
 
 import (
 	"fmt"
+	"github.com/kirillrdy/pt/xlib"
 	"math"
 	"math/rand"
 	"time"
@@ -31,6 +32,13 @@ type ResultEvent struct {
 type pixelJob struct {
 	x int
 	y int
+}
+
+func RenderToWindow(eventsChan chan ResultEvent) {
+
+	for event := range eventsChan {
+		xlib.SetPixel(event.X, event.Y, int(event.Pixel.R*65535), int(event.Pixel.G*65535), int(event.Pixel.B*65535))
+	}
 }
 
 func pixelJobs(width int, height int) chan pixelJob {

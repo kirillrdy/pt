@@ -43,11 +43,7 @@ func main() {
 	hitSamples := 4
 	bounces := 4
 
-	eventsChan := pt.Render(&scene, &camera, width, height, cameraSamples, hitSamples, bounces)
-
-	for event := range eventsChan {
-		xlib.SetPixel(event.X, event.Y, int(event.Pixel.R*65535), int(event.Pixel.G*65535), int(event.Pixel.B*65535))
-	}
+	pt.RenderToWindow(pt.Render(&scene, &camera, width, height, cameraSamples, hitSamples, bounces))
 }
 
 //TODO write a function that averages 2 images
