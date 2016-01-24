@@ -2,7 +2,6 @@ package pt
 
 import (
 	"fmt"
-	"image/color"
 	"math"
 	"math/rand"
 	"time"
@@ -26,7 +25,7 @@ func showProgress(start time.Time, rays uint64, i, h int) {
 type ResultEvent struct {
 	X     int
 	Y     int
-	Pixel color.RGBA
+	Pixel Color
 }
 
 func Render(scene *Scene, camera *Camera, w, h, cameraSamples, hitSamples, bounces int) chan ResultEvent {
@@ -65,7 +64,7 @@ func Render(scene *Scene, camera *Camera, w, h, cameraSamples, hitSamples, bounc
 				}
 				c = c.Pow(1 / 2.2)
 
-				results <- ResultEvent{X: x, Y: y, Pixel: c.RGBA()}
+				results <- ResultEvent{X: x, Y: y, Pixel: c}
 			}
 		}
 		close(results)

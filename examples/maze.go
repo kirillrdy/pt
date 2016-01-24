@@ -46,7 +46,7 @@ func main() {
 	eventsChan := pt.Render(&scene, &camera, width, height, cameraSamples, hitSamples, bounces)
 
 	for event := range eventsChan {
-		xlib.SetPixel(event.X, event.Y, uint8ToPixel(event.Pixel.R), uint8ToPixel(event.Pixel.G), uint8ToPixel(event.Pixel.B))
+		xlib.SetPixel(event.X, event.Y, int(event.Pixel.R*65535), int(event.Pixel.G*65535), int(event.Pixel.B*65535))
 	}
 }
 
