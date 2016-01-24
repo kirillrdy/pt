@@ -64,11 +64,11 @@ func (s *Sphere) Normal(p Vector) Vector {
 	return p.Sub(s.center).Normalize()
 }
 
-func (s *Sphere) RandomPoint(rnd *rand.Rand) Vector {
+func (s *Sphere) RandomPoint() Vector {
 	for {
-		x := rnd.Float64()*2 - 1
-		y := rnd.Float64()*2 - 1
-		z := rnd.Float64()*2 - 1
+		x := rand.Float64()*2 - 1
+		y := rand.Float64()*2 - 1
+		z := rand.Float64()*2 - 1
 		v := Vector{x, y, z}
 		if v.Length() <= 1 {
 			return v.MulScalar(s.radius).Add(s.center)

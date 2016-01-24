@@ -62,9 +62,9 @@ func (c *Cube) Normal(p Vector) Vector {
 	return Vector{0, 1, 0}
 }
 
-func (c *Cube) RandomPoint(rnd *rand.Rand) Vector {
-	x := c.min.X + rnd.Float64()*(c.max.X-c.min.X)
-	y := c.min.Y + rnd.Float64()*(c.max.Y-c.min.Y)
-	z := c.min.Z + rnd.Float64()*(c.max.Z-c.min.Z)
+func (c *Cube) RandomPoint() Vector {
+	x := c.min.X + rand.Float64()*(c.max.X-c.min.X)
+	y := c.min.Y + rand.Float64()*(c.max.Y-c.min.Y)
+	z := c.min.Z + rand.Float64()*(c.max.Z-c.min.Z)
 	return Vector{x, y, z}
 }

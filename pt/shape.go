@@ -1,8 +1,6 @@
 package pt
 
-import (
-	"math/rand"
-)
+import ()
 
 type Shape interface {
 	Compile()
@@ -11,7 +9,7 @@ type Shape interface {
 	Color(Vector) Color
 	Material(Vector) Material
 	Normal(Vector) Vector
-	RandomPoint(*rand.Rand) Vector
+	RandomPoint() Vector
 }
 
 type TransformedShape struct {
@@ -51,6 +49,6 @@ func (s *TransformedShape) Normal(p Vector) Vector {
 	return s.matrix.MulDirection(s.Shape.Normal(s.inverse.MulPosition(p)))
 }
 
-func (s *TransformedShape) RandomPoint(rnd *rand.Rand) Vector {
-	return s.matrix.MulPosition(s.Shape.RandomPoint(rnd))
+func (s *TransformedShape) RandomPoint() Vector {
+	return s.matrix.MulPosition(s.Shape.RandomPoint())
 }

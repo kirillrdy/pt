@@ -2,7 +2,6 @@ package pt
 
 import (
 	"math"
-	"math/rand"
 )
 
 type Mesh struct {
@@ -50,7 +49,7 @@ func (m *Mesh) Normal(p Vector) Vector {
 	return Vector{} // not implemented
 }
 
-func (m *Mesh) RandomPoint(rnd *rand.Rand) Vector {
+func (m *Mesh) RandomPoint() Vector {
 	return Vector{} // not implemented
 }
 

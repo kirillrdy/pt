@@ -53,13 +53,13 @@ func (s *Scene) Shadow(r Ray, light Shape, max float64) bool {
 	return hit.Shape != light && hit.T < max
 }
 
-func (s *Scene) DirectLight(n Ray, rnd *rand.Rand) Color {
+func (s *Scene) DirectLight(n Ray) Color {
 	if len(s.lights) == 0 {
 		return Color{}
 	}
 	color := Color{}
 	for _, light := range s.lights {
-		p := light.RandomPoint(rnd)
+		p := light.RandomPoint()
 		d := p.Sub(n.Origin)
 		lr := Ray{n.Origin, d.Normalize()}
 		diffuse := lr.Direction.Dot(n.Direction)
@@ -78,22 +78,22 @@ func (s *Scene) DirectLight(n Ray, rnd *rand.Rand) Color {
 	return color.DivScalar(float64(len(s.lights)))
 }
 
-func (s *Scene) Sample(r Ray, emission bool, samples, depth int, rnd *rand.Rand) Color {
+func (s *Scene) Sample(r Ray, emission bool, samples, depth int) Color {
 	if depth < 0 {
 		return Color{}
 	}
 	hit := s.Intersect(r)
 	if s.visibility > 0 {
-		t := math.Pow(rnd.Float64(), 0.5) * s.visibility
+		t := math.Pow(rand.Float64(), 0.5) * s.visibility
 		if t < hit.T {
-			x := rnd.Float64() - 0.5
-			y := rnd.Float64() - 0.5
-			z := rnd.Float64() - 0.5
+			x := rand.Float64() - 0.5
+			y := rand.Float64() - 0.5
+			z := rand.Float64() - 0.5
 			d := Vector{x, y, z}
 			d = d.Normalize()
 			o := r.Position(t)
 			newRay := Ray{o, d}
-			return s.Sample(newRay, false, 1, depth-1, rnd)
+			return s.Sample(newRay, false, 1, depth-1)
 		}
 	}
 	if !hit.Ok() {
@@ -111,16 +111,16 @@ func (s *Scene) Sample(r Ray, emission bool, samples, depth int, rnd *rand.Rand)
 	n := int(math.Sqrt(float64(samples)))
 	for u := 0; u < n; u++ {
 		for v := 0; v < n; v++ {
-			p := rnd.Float64()
-			fu := (float64(u) + rnd.Float64()) / float64(n)
-			fv := (float64(v) + rnd.Float64()) / float64(n)
+			p := rand.Float64()
+			fu := (float64(u) + rand.Float64()) / float64(n)
+			fv := (float64(v) + rand.Float64()) / float64(n)
 			newRay, reflected := r.Bounce(&info, p, fu, fv)
-			indirect := s.Sample(newRay, reflected, 1, depth-1, rnd)
+			indirect := s.Sample(newRay, reflected, 1, depth-1)
 			if reflected {
 				tinted := indirect.Mix(info.Color.Mul(indirect), info.Material.Tint)
 				result = result.Add(tinted)
 			} else {
-				direct := s.DirectLight(info.Ray, rnd)
+				direct := s.DirectLight(info.Ray)
 				result = result.Add(info.Color.Mul(direct.Add(indirect)))
 			}
 		}

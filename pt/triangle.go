@@ -1,7 +1,5 @@
 package pt
 
-import "math/rand"
-
 type Triangle struct {
 	material   *Material
 	box        Box
@@ -133,7 +131,7 @@ func (t *Triangle) Normal(p Vector) Vector {
 	return n
 }
 
-func (t *Triangle) RandomPoint(rnd *rand.Rand) Vector {
+func (t *Triangle) RandomPoint() Vector {
 	return Vector{} // TODO: fix
 }
 

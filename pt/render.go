@@ -66,28 +66,28 @@ func Render(scene *Scene, camera *Camera, w, h int) chan ResultEvent {
 	results := make(chan ResultEvent)
 	for i := 0; i < runtime.NumCPU(); i++ {
 		go func() {
-			rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
+			//TODO do we still need this
+			//rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
 			for pixelJob := range pixelJobs {
-				renderEvent := pixelRender(w, h, scene, camera, pixelJob.x, pixelJob.y, absCameraSamples, rnd)
+				renderEvent := pixelRender(w, h, scene, camera, pixelJob.x, pixelJob.y, absCameraSamples)
 				results <- renderEvent
 			}
-
 			//close(results)
 		}()
 	}
 	return results
 }
 
-func pixelRender(w, h int, scene *Scene, camera *Camera, x, y int, absCameraSamples int, rnd *rand.Rand) ResultEvent {
+func pixelRender(w, h int, scene *Scene, camera *Camera, x, y int, absCameraSamples int) ResultEvent {
 
 	c := Color{}
 	if RenderConfig.CameraSamples <= 0 {
 		// random subsampling
 		for i := 0; i < absCameraSamples; i++ {
-			fu := rnd.Float64()
-			fv := rnd.Float64()
-			ray := camera.CastRay(x, y, w, h, fu, fv, rnd)
-			c = c.Add(scene.Sample(ray, true, RenderConfig.HitSamples, RenderConfig.Bounces, rnd))
+			fu := rand.Float64()
+			fv := rand.Float64()
+			ray := camera.CastRay(x, y, w, h, fu, fv)
+			c = c.Add(scene.Sample(ray, true, RenderConfig.HitSamples, RenderConfig.Bounces))
 		}
 		c = c.DivScalar(float64(absCameraSamples))
 	} else {
@@ -97,8 +97,8 @@ func pixelRender(w, h int, scene *Scene, camera *Camera, x, y int, absCameraSamp
 			for v := 0; v < n; v++ {
 				fu := (float64(u) + 0.5) / float64(n)
 				fv := (float64(v) + 0.5) / float64(n)
-				ray := camera.CastRay(x, y, w, h, fu, fv, rnd)
-				c = c.Add(scene.Sample(ray, true, RenderConfig.HitSamples, RenderConfig.Bounces, rnd))
+				ray := camera.CastRay(x, y, w, h, fu, fv)
+				c = c.Add(scene.Sample(ray, true, RenderConfig.HitSamples, RenderConfig.Bounces))
 			}
 		}
 		c = c.DivScalar(float64(n * n))
