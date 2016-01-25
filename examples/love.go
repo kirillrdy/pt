@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/fogleman/pt/pt"
+	"github.com/kirillrdy/pt/pt"
 )
 
 func main() {
@@ -21,5 +21,5 @@ func main() {
 	scene.Add(pt.NewSphere(pt.Vector{0, 10, -2}, 1, pt.LightMaterial(pt.Color{1, 1, 1}, 1, pt.NoAttenuation)))
 	scene.Add(pt.NewSphere(pt.Vector{2, 10, -2}, 1, pt.LightMaterial(pt.Color{1, 1, 1}, 1, pt.NoAttenuation)))
 	camera := pt.LookAt(pt.Vector{0, 1.5, -2}, pt.Vector{0, 0.5, 0}, pt.Vector{0, 1, 0}, 35)
-	pt.IterativeRender("out%03d.png", 1000, &scene, &camera, 1440, 900, -1, 16, 4)
+	pt.RenderToWindow(pt.Render(&scene, &camera))
 }

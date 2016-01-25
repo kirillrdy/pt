@@ -1,6 +1,6 @@
 package main
 
-import "github.com/fogleman/pt/pt"
+import "github.com/kirillrdy/pt/pt"
 
 // http://graphics.cs.williams.edu/data/meshes/dragon.zip
 
@@ -19,5 +19,5 @@ func main() {
 	scene.Add(pt.NewCube(pt.Vector{-1000, -1000, -1000}, pt.Vector{1000, 0, 1000}, floor))
 	scene.Add(pt.NewSphere(pt.Vector{0, 10, 0}, 1, pt.LightMaterial(pt.Color{1, 1, 1}, 1, pt.NoAttenuation)))
 	camera := pt.LookAt(pt.Vector{-3, 2, -1}, pt.Vector{0, 0.5, 0}, pt.Vector{0, 1, 0}, 35)
-	pt.IterativeRender("out%03d.png", 1000, &scene, &camera, 2560/4, 1440/4, -1, 4, 4)
+	pt.RenderToWindow(pt.Render(&scene, &camera))
 }

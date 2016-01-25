@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/fogleman/pt/pt"
+	"github.com/kirillrdy/pt/pt"
 )
 
 func main() {
@@ -18,8 +18,5 @@ func main() {
 	}
 	scene.Add(mesh)
 	camera := pt.LookAt(pt.Vector{1, -0.45, 4}, pt.Vector{1, -0.6, 0.4}, pt.Vector{0, 1, 0}, 45)
-	im := pt.Render(&scene, &camera, 2560/4, 1440/4, 4, 16, 4)
-	if err := pt.SavePNG("out.png", im); err != nil {
-		log.Fatalln("SavePNG error:", err)
-	}
+	pt.RenderToWindow(pt.Render(&scene, &camera))
 }

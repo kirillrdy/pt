@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/fogleman/pt/pt"
+	"github.com/kirillrdy/pt/pt"
 )
 
 func createMesh(material pt.Material) pt.Shape {
@@ -36,5 +36,5 @@ func main() {
 	}
 	scene.Add(pt.NewSphere(pt.Vector{1, 0, 10}, 3, pt.LightMaterial(pt.Color{1, 1, 1}, 1, pt.NoAttenuation)))
 	camera := pt.LookAt(pt.Vector{-5, 0, 5}, pt.Vector{1, 0, 0}, pt.Vector{0, 0, 1}, 45)
-	pt.IterativeRender("out%03d.png", 1000, &scene, &camera, 5475, 3675, -1, 16, 3)
+	pt.RenderToWindow(pt.Render(&scene, &camera))
 }

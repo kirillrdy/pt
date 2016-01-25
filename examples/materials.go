@@ -1,6 +1,6 @@
 package main
 
-import "github.com/fogleman/pt/pt"
+import "github.com/kirillrdy/pt/pt"
 
 func main() {
 	scene := pt.Scene{}
@@ -28,5 +28,5 @@ func main() {
 	scene.Add(pt.NewCube(pt.Vector{-1000, -1, -1000}, pt.Vector{1000, 0, 1000}, pt.GlossyMaterial(pt.HexColor(0xFFFFFF), 1.4, pt.Radians(20))))
 	scene.Add(pt.NewSphere(pt.Vector{0, 5, 0}, 1, pt.LightMaterial(pt.Color{1, 1, 1}, 3, pt.LinearAttenuation(0.4))))
 	camera := pt.LookAt(pt.Vector{0, 3, 6}, pt.Vector{0, 1, 0}, pt.Vector{0, 1, 0}, 30)
-	pt.IterativeRender("out%03d.png", 1000, &scene, &camera, 2560/2, 1440/2, -1, 16, 16)
+	pt.RenderToWindow(pt.Render(&scene, &camera))
 }

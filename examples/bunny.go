@@ -1,7 +1,8 @@
 package main
 
-import "github.com/fogleman/pt/pt"
+import "github.com/kirillrdy/pt/pt"
 
+// https://graphics.stanford.edu/~mdfisher/Data/Meshes/bunny.obj
 func main() {
 	scene := pt.Scene{}
 	material := pt.GlossyMaterial(pt.HexColor(0xF2EBC7), 1.5, pt.Radians(0))
@@ -17,5 +18,5 @@ func main() {
 	scene.Add(pt.NewSphere(pt.Vector{0, 5, 0}, 1, pt.LightMaterial(pt.Color{1, 1, 1}, 1, pt.NoAttenuation)))
 	scene.Add(pt.NewSphere(pt.Vector{4, 5, 4}, 1, pt.LightMaterial(pt.Color{1, 1, 1}, 1, pt.NoAttenuation)))
 	camera := pt.LookAt(pt.Vector{-1, 2, 3}, pt.Vector{0, 0.75, 0}, pt.Vector{0, 1, 0}, 50)
-	pt.IterativeRender("out%03d.png", 1000, &scene, &camera, 2560, 1440, -1, 4, 4)
+	pt.RenderToWindow(pt.Render(&scene, &camera))
 }

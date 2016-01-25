@@ -5,7 +5,6 @@ import (
 	"math/rand"
 
 	"github.com/kirillrdy/pt/pt"
-	"github.com/kirillrdy/pt/xlib"
 )
 
 func createMesh(material pt.Material) pt.Shape {
@@ -37,9 +36,6 @@ func main() {
 	}
 	scene.Add(pt.NewSphere(pt.Vector{8, 10, 0}, 3, pt.LightMaterial(pt.Color{1, 1, 1}, 1, pt.NoAttenuation)))
 	camera := pt.LookAt(pt.Vector{-10, 10, 0}, pt.Vector{-2, 0, 0}, pt.Vector{0, 1, 0}, 45)
-	width := 2560 / 2
-	height := 1440 / 2
-	xlib.CreateWindow(width, height)
-	pt.RenderConfig.CameraSamples = 40
-	pt.RenderToWindow(pt.Render(&scene, &camera, width, height))
+	pt.RenderConfig.CameraSamples = 80
+	pt.RenderToWindow(pt.Render(&scene, &camera))
 }

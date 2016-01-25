@@ -3,7 +3,7 @@ package main
 import (
 	"math/rand"
 
-	"github.com/fogleman/pt/pt"
+	"github.com/kirillrdy/pt/pt"
 )
 
 func main() {
@@ -29,5 +29,5 @@ func main() {
 	scene.Add(pt.NewCube(pt.Vector{-1000, -1000, -1}, pt.Vector{1000, 1000, 0}, floor))
 	scene.Add(pt.NewSphere(pt.Vector{fn, fn / 3, fn * 2}, 1, pt.LightMaterial(pt.Color{1, 1, 1}, 1, pt.NoAttenuation)))
 	camera := pt.LookAt(pt.Vector{fn * 2, fn * 2, fn * 2}, pt.Vector{0, 0, fn / 4}, pt.Vector{0, 0, 1}, 35)
-	pt.IterativeRender("out%03d.png", 1000, &scene, &camera, 2880, 1800, -1, 16, 4)
+	pt.RenderToWindow(pt.Render(&scene, &camera))
 }

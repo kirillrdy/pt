@@ -4,7 +4,6 @@ import (
 	"math/rand"
 
 	"github.com/kirillrdy/pt/pt"
-	"github.com/kirillrdy/pt/xlib"
 )
 
 func uint8ToPixel(val uint8) int {
@@ -13,11 +12,6 @@ func uint8ToPixel(val uint8) int {
 }
 
 func main() {
-
-	width := 1980
-	height := 1080
-
-	xlib.CreateWindow(width, height)
 
 	scene := pt.Scene{}
 	floor := pt.GlossyMaterial(pt.HexColor(0x7E827A), 1.1, pt.Radians(30))
@@ -39,7 +33,7 @@ func main() {
 	camera := pt.LookAt(pt.Vector{1, 0, 30}, pt.Vector{0, 0, 0}, pt.Vector{0, 0, 1}, 35)
 	//IterativeRender("out%03d.png", 1000, &scene, &camera, 2560, 1440, -1, 4, 4)
 
-	pt.RenderToWindow(pt.Render(&scene, &camera, width, height))
+	pt.RenderToWindow(pt.Render(&scene, &camera))
 }
 
 //TODO write a function that averages 2 images
