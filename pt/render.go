@@ -42,6 +42,32 @@ func RenderToWindow(eventsChan chan ResultEvent) {
 	}
 }
 
+func pixelJobsAtRandom(width int, height int) chan pixelJob {
+	jobs := make([]pixelJob, width*height)
+
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			jobs = append(jobs, pixelJob{x: x, y: y})
+		}
+	}
+
+	for range jobs {
+		a := rand.Intn(len(jobs))
+		b := rand.Intn(len(jobs))
+		jobs[a], jobs[b] = jobs[b], jobs[a]
+	}
+
+	jobChannel := make(chan pixelJob)
+	go func() {
+		for _, job := range jobs {
+			jobChannel <- job
+		}
+		close(jobChannel)
+	}()
+
+	return jobChannel
+}
+
 func pixelJobs(width int, height int) chan pixelJob {
 	jobChannel := make(chan pixelJob)
 	go func() {
@@ -56,7 +82,7 @@ func pixelJobs(width int, height int) chan pixelJob {
 }
 
 func Render(scene *Scene, camera *Camera, w, h int) chan ResultEvent {
-	pixelJobs := pixelJobs(w, h)
+	pixelJobs := pixelJobsAtRandom(w, h)
 	scene.Compile()
 	absCameraSamples := int(math.Abs(float64(RenderConfig.CameraSamples)))
 	fmt.Printf("%d x %d pixels, %d x %d = %d samples, %d bounces \n",
