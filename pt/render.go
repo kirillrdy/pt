@@ -3,6 +3,7 @@ package pt
 import (
 	"fmt"
 	"github.com/kirillrdy/pt/xlib"
+	"log"
 	"math"
 	"math/rand"
 	"runtime"
@@ -37,13 +38,16 @@ type pixelJob struct {
 
 func RenderToWindow(eventsChan chan ResultEvent) {
 
+	xlib.CreateWindow(RenderConfig.Width, RenderConfig.Height)
+
 	for event := range eventsChan {
 		xlib.SetPixel(event.X, event.Y, int(event.Pixel.R*65535), int(event.Pixel.G*65535), int(event.Pixel.B*65535))
 	}
 }
 
 func pixelJobsAtRandom(width int, height int) chan pixelJob {
-	jobs := make([]pixelJob, width*height)
+	start := time.Now()
+	jobs := make([]pixelJob, 0, width*height)
 
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
@@ -51,13 +55,14 @@ func pixelJobsAtRandom(width int, height int) chan pixelJob {
 		}
 	}
 
-	for range jobs {
+	for count := 0; count < len(jobs); count++ {
 		a := rand.Intn(len(jobs))
 		b := rand.Intn(len(jobs))
 		jobs[a], jobs[b] = jobs[b], jobs[a]
 	}
 
 	jobChannel := make(chan pixelJob)
+	log.Printf("Randomizing pixels took %v\n ", time.Since(start))
 	go func() {
 		for _, job := range jobs {
 			jobChannel <- job
@@ -81,12 +86,12 @@ func pixelJobs(width int, height int) chan pixelJob {
 	return jobChannel
 }
 
-func Render(scene *Scene, camera *Camera, w, h int) chan ResultEvent {
-	pixelJobs := pixelJobsAtRandom(w, h)
+func Render(scene *Scene, camera *Camera) chan ResultEvent {
+	pixelJobs := pixelJobsAtRandom(RenderConfig.Width, RenderConfig.Height)
 	scene.Compile()
 	absCameraSamples := int(math.Abs(float64(RenderConfig.CameraSamples)))
 	fmt.Printf("%d x %d pixels, %d x %d = %d samples, %d bounces \n",
-		w, h, absCameraSamples, RenderConfig.HitSamples, absCameraSamples*RenderConfig.HitSamples, RenderConfig.Bounces)
+		RenderConfig.Width, RenderConfig.Height, absCameraSamples, RenderConfig.HitSamples, absCameraSamples*RenderConfig.HitSamples, RenderConfig.Bounces)
 	scene.rays = 0
 	//rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
 	results := make(chan ResultEvent)
@@ -95,7 +100,7 @@ func Render(scene *Scene, camera *Camera, w, h int) chan ResultEvent {
 			//TODO do we still need this
 			//rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
 			for pixelJob := range pixelJobs {
-				renderEvent := pixelRender(w, h, scene, camera, pixelJob.x, pixelJob.y, absCameraSamples)
+				renderEvent := pixelRender(scene, camera, pixelJob.x, pixelJob.y, absCameraSamples)
 				results <- renderEvent
 			}
 			//close(results)
@@ -104,7 +109,7 @@ func Render(scene *Scene, camera *Camera, w, h int) chan ResultEvent {
 	return results
 }
 
-func pixelRender(w, h int, scene *Scene, camera *Camera, x, y int, absCameraSamples int) ResultEvent {
+func pixelRender(scene *Scene, camera *Camera, x, y int, absCameraSamples int) ResultEvent {
 
 	c := Color{}
 	if RenderConfig.CameraSamples <= 0 {
@@ -112,7 +117,7 @@ func pixelRender(w, h int, scene *Scene, camera *Camera, x, y int, absCameraSamp
 		for i := 0; i < absCameraSamples; i++ {
 			fu := rand.Float64()
 			fv := rand.Float64()
-			ray := camera.CastRay(x, y, w, h, fu, fv)
+			ray := camera.CastRay(x, y, fu, fv)
 			c = c.Add(scene.Sample(ray, true, RenderConfig.HitSamples, RenderConfig.Bounces))
 		}
 		c = c.DivScalar(float64(absCameraSamples))
@@ -123,7 +128,7 @@ func pixelRender(w, h int, scene *Scene, camera *Camera, x, y int, absCameraSamp
 			for v := 0; v < n; v++ {
 				fu := (float64(u) + 0.5) / float64(n)
 				fv := (float64(v) + 0.5) / float64(n)
-				ray := camera.CastRay(x, y, w, h, fu, fv)
+				ray := camera.CastRay(x, y, fu, fv)
 				c = c.Add(scene.Sample(ray, true, RenderConfig.HitSamples, RenderConfig.Bounces))
 			}
 		}

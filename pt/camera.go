@@ -27,7 +27,9 @@ func (c *Camera) SetFocus(focalPoint Vector, apertureRadius float64) {
 	c.apertureRadius = apertureRadius
 }
 
-func (c *Camera) CastRay(x, y, w, h int, u, v float64) Ray {
+func (c *Camera) CastRay(x, y int, u, v float64) Ray {
+	w := RenderConfig.Width
+	h := RenderConfig.Height
 	aspect := float64(w) / float64(h)
 	px := ((float64(x)+u-0.5)/(float64(w)-1))*2 - 1
 	py := ((float64(y)+v-0.5)/(float64(h)-1))*2 - 1
