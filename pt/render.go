@@ -57,6 +57,7 @@ func pixelRender(scene *Scene, camera *Camera, x, y int, absCameraSamples int) p
 	return pixelRenderResult{X: x, Y: y, Pixel: c}
 }
 
+//TODO restore this, using channels
 // func IterativeRender(pathTemplate string, iterations int, scene *Scene, camera *Camera, w, h, cameraSamples, hitSamples, bounces int) error {
 // 	scene.Compile()
 // 	pixels := make([]Color, w*h)
