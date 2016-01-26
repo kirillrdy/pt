@@ -18,6 +18,7 @@ func Render(scene *Scene, camera *Camera) chan pixelRenderResult {
 	for i := 0; i < runtime.NumCPU(); i++ {
 		go func() {
 			for pixelJob := range pixelJobs {
+				//TODO less copying
 				renderEvent := pixelRender(scene, camera, pixelJob.x, pixelJob.y, absCameraSamples)
 				results <- renderEvent
 			}
